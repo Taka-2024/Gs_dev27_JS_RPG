@@ -21,7 +21,7 @@ const       SCR_HEIGHT      = 8;                        //画面タイルサイ�
 const       SCROLL          = 4;                        //スクロール速度
 const       WNDSTYLE       ="rgba( 0, 0, 0, 0.75)";    //ウィンドウの色
 
-const       gKey = new Uint8Array(0x100);                   //キー入力バッファ
+const       gKey  = new Uint8Array(0x100);                   //キー入力バッファ
 
 let         gAngle = 0;                                     //プレイヤーの向き
 let         gEx = 0;                                        //プレイヤーの経験値
@@ -41,17 +41,22 @@ let         gImgBoss;                                       //画像‗ラスボ
 let         gImgMap;                                        //画像_マップ
 let         gImgPlayer;                                     //画像_プレイヤー
 let         gImgMonster;                                    //画像_モンスター
-let         gItem = 0;                                      //所持アイテム 
+let         gItem = 1;                                      //所持アイテム 
 let         gPhase = 0;                                     //戦闘フェーズ        
 let         gPlayerX =  START_X * TILESIZE + TILESIZE / 2 ;        //プレイヤーX座標
 let         gPlayerY =  START_Y * TILESIZE + TILESIZE / 2 ;        //プレイヤーY座標
 let         gScreen;                                        //仮想画面
-
+let         isPlaying = false;                              //初期状態は音楽あり
+let         audio     = new Audio(" ");  
 
 const       gFileBoss    =  "img/boss.png";
 const       gFileMap    =  "img/map.png";
 const       gFileMonster =  "img/monster.png";
 const       gFilePlayer =  "img/player.png";
+const       mField1 = "mp3/field_1.mp3";           //フィールド音楽1
+const       mBattle1 ="mp3/battle_1.mp3";           //バトル音楽1
+// const       mBattle2 ="";
+const       mEnding ="mp3/Ending.mp3"; 
 
 
 const       gEncounter  = [0, 0, 0, 1, 0, 0, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0];         //エンカウント確率
@@ -98,20 +103,19 @@ const       gMap = [
 
 
 
-
 //戦闘行動処理
 function Action ()
 {
     gPhase ++;                                  //フェーズ経過
 
     if(gPhase == 3 ){
-        SetMessage( gMonsterName[ gEnemyType ]+ "の攻撃！", 999+ "　のダメージ！"  );
+        SetMessage( gMonsterName[ gEnemyType ]+ "の攻撃！", gEnemyType +1 + "　のダメージ！"  );
 // gPhase = 7;
         return;
     }   
 
     if( gCursor == 0 ){                         //「戦う」選択時
-        SetMessage("あなたの攻撃！", 333+ "　のダメージ！" );
+        SetMessage("あなたの攻撃！", gLv + 3 + "　のダメージ！" );
 gPhase = 5;
         return;
     }
@@ -142,7 +146,11 @@ function AppearEnemy( t ){
     gPhase = 1;
     gEnemyType = t ;                                    //     
     SetMessage("モンスターが現れた！" , null);
-}
+    // setTimeout(function() {
+    //     gPhase = 2;
+    // }, 2000);
+    }
+
 
 
 //戦闘コマンド
@@ -241,6 +249,7 @@ function DrawMain()
 
     DrawStatus ( g );                                  //ステータス描画
     DrawMessage( g );                                  //メッセージ描画
+
     // document.addEventListener('keydown', function(event) {
     //     if (event.code === 'Space') {  // スペースキーが押された場合
     //         DrawConfig( g );
@@ -282,6 +291,7 @@ function DrawStatus( g )
         g.fillText( "LV " +gLv, 4, 13);                         //Lv
         g.fillText( "HP " +gHP, 4, 25);                         //HP
         g.fillText( "EX " +gEx, 4, 37);                         //Ex
+
 }
 
 //セーブ画面
@@ -300,6 +310,64 @@ function DrawStatus( g )
 //         g.fillText( "ロード", 95, 25);
 //     // });
 // }
+
+
+function SwitchAudio()
+{
+    SwitchMusic ()
+    if (isPlaying) {            // 音楽が再生中の場合は停止
+        PauseMusic();
+    } else {            // 音楽が停止中の場合は再生
+        PlayMusic();
+    }
+}
+
+function PlayMusic()
+{
+    if (gPhase == 0 ) {
+        audio.pause();
+        audio.src = mField1;
+        audio.volume = 0.05;  //
+        audio.loop = true;    // ループ再生をオン
+        audio.play();
+        isPlaying = true;
+    }
+    
+    if (gPhase ==1 ) {
+        audio.pause();
+        audio.src = mBattle1;
+        audio.volume = 0.05;  //
+        audio.loop = true;    // ループ再生をオン
+        audio.play();
+        isPlaying = true;
+    }
+    
+    if (gPhase == 6 ) {
+        audio.pause();
+        audio.src = mEnding;
+        audio.volume = 0.05;  //
+        audio.loop = true;    // ループ再生をオン
+        audio.play();
+        isPlaying = true;
+    }    
+}
+
+
+function PauseMusic(){
+    audio.pause();
+    audio.currentTime = 0;  // 音楽を最初から再生するために設定
+    isPlaying = false;
+}
+
+
+//音楽切り替え処理
+function SwitchMusic (){
+
+
+
+}
+
+
 
 
 function DrawTile( g, x,  y, idx )
@@ -399,10 +467,10 @@ function TickField()
             AppearEnemy( gMonsterName.length - 1);                                     
         }
         
-        if (Math.random() * 8 < gEncounter[ m ]){               //マップの処理に応じてランダムエンカウント     
+        if (Math.random() * 16 < gEncounter[ m ]){               //マップの処理に応じてランダムエンカウント     
             gPhase = 1;
             
-            AppearEnemy( 0 )  ;                                       //戦闘フェーズ [0＝スライム、1＝ラビット、、、4＝魔王
+            AppearEnemy(  Math.floor(Math.random() * 4 ))  ;                                       //戦闘フェーズ [0＝スライム、1＝ラビット、、、4＝魔王
         }
         
         
@@ -490,6 +558,10 @@ window.onkeydown = function( ev )                   //キーを押したとき�
         localStorage.removeItem('Y座標');
         return;
     }
+    if( c == 77 ){               //Cキーの場合
+        SwitchAudio()
+        return;
+    }
 
 
 
@@ -500,11 +572,14 @@ window.onkeydown = function( ev )                   //キーを押したとき�
     //     }    
     // }
 
+
+
     if (gPhase == 1){                               //敵が現れた場合
         CommandFight();
         return;
-    }    
-    
+    }   
+
+
     if (gPhase == 2){                           //戦闘コマンド選択フェーズ
         if( c == 13 || c == 90 ){               //Enterキー、又はZキーの場合
             Action();                       //戦闘行動処理
@@ -528,13 +603,15 @@ window.onkeydown = function( ev )                   //キーを押したとき�
     if( gPhase == 5 ){
         gPhase = 6;
         AddExp(gEnemyType + 1);
+        gHP -=  gEnemyType + 1;
         SetMessage ("モンスターを倒した！", null);
         return;
     }
 
     if( gPhase == 6 ){
         if( IsBoss() && gCursor == 0){          //敵がラスボスで、かつ「戦う」を選択したとき
-            SetMessage("魔王を倒し", "世界に平和が訪れた" );         
+            SetMessage("魔王を倒し", "世界に平和が訪れた" );
+            PlayMusic();         
             return;
         }
         gPhase = 0;
@@ -569,10 +646,10 @@ window.onkeyup = function( ev )                     //キーを離したとき�
 window.onload =function()                                                   //onload ref:https://qiita.com/s_ryota/items/ac26a2fb9a62c16561ce
 {
     LoadImage();
-    
     gScreen = document.createElement("canvas");                             //tagName で指定された HTML 要素を生成し、または tagName が認識できない場合は HTMLUnknownElement を生成 ref: https://developer.mozilla.org/ja/docs/Web/API/Document/createElement
     gScreen.width = WIDTH;                                                  //実画面の幅を仮想画面の幅に
     gScreen.height = HEIGHT;                                                //実画面の高さを仮想画面の高さに
+
 
     WmSize();                                                               //画面サイズ初期化
     window.addEventListener("resize", function(){WmSize()});                //ブラウザサイズ変更時の処理　ここでは"resize"イベントがおこった際、"WmSize"関数が実行される　　ref:https://developer.mozilla.org/ja/docs/Web/API/EventTarget/addEventListener
