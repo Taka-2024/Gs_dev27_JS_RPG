@@ -18,7 +18,7 @@ const       MAP_WIDTH       = 32;                       //マップ幅
 const       MAP_HEIGHT      = 32;                       //マップ高さ
 const       SCR_WIDTH       = 8;                        //画面タイルサイズの半分の幅
 const       SCR_HEIGHT      = 8;                        //画面タイルサイズの半分の高さ
-const       SCROLL          = 4;                        //スクロール速度
+const       SCROLL          = 1;                        //スクロール速度
 const       WNDSTYLE       ="rgba( 0, 0, 0, 0.75)";    //ウィンドウの色
 
 const       gKey  = new Uint8Array(0x100);                   //キー入力バッファ
@@ -41,7 +41,7 @@ let         gImgBoss;                                       //画像‗ラスボ
 let         gImgMap;                                        //画像_マップ
 let         gImgPlayer;                                     //画像_プレイヤー
 let         gImgMonster;                                    //画像_モンスター
-let         gItem = 1;                                      //所持アイテム 
+let         gItem = 0;                                      //所持アイテム 
 let         gPhase = 0;                                     //戦闘フェーズ        
 let         gPlayerX =  START_X * TILESIZE + TILESIZE / 2 ;        //プレイヤーX座標
 let         gPlayerY =  START_Y * TILESIZE + TILESIZE / 2 ;        //プレイヤーY座標
@@ -61,7 +61,7 @@ const       mEnding ="mp3/Ending.mp3";
 
 const       gEncounter  = [0, 0, 0, 1, 0, 0, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0];         //エンカウント確率
 
-const       gMonsterName = ["スライム","ラビット","ナイト","ドラゴン", "魔王"];         //モンスター名
+const       gMonsterName = ["スライム","ラビット","ナイト","ドラゴンベビー", "魔王"];         //モンスター名
 
 //マップ
 const       gMap = [
