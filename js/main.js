@@ -241,6 +241,12 @@ function DrawMain()
 
     DrawStatus ( g );                                  //ステータス描画
     DrawMessage( g );                                  //メッセージ描画
+    // document.addEventListener('keydown', function(event) {
+    //     if (event.code === 'Space') {  // スペースキーが押された場合
+    //         DrawConfig( g );
+    //     }
+    // });
+
     //デバッグウィンドウ
     // g.fillStyle = WNDSTYLE;                                //ウィンドウの色        
     // g.fillRect( 20 , 3 , 105, 15);                        //ウィンドウの大きさ
@@ -268,7 +274,6 @@ function DrawMessage( g )
 
 }
 
-
 //ステータス描画
 function DrawStatus( g )
     {
@@ -278,6 +283,23 @@ function DrawStatus( g )
         g.fillText( "HP " +gHP, 4, 25);                         //HP
         g.fillText( "EX " +gEx, 4, 37);                         //Ex
 }
+
+//セーブ画面
+// function DrawConfig( g )
+// {
+    // document.addEventListener('keydown', function(event) {
+    //     if (event.code !== 'Space') {  // スペースキーが押されていない場合
+    //         return;
+    //     }
+//         g.fillStyle = WNDSTYLE;                               //ウィンドウの色        
+//         g.fillRect( 84 , 2 , 40, 20);                          //ウィンドウの大きさ
+
+//         g.font = FONT;                                          //文字フォントの設定
+//         g.fillStyle = FONTSTYLE;                                //文字の色
+//         g.fillText( "セーブ", 95, 13);
+//         g.fillText( "ロード", 95, 25);
+//     // });
+// }
 
 
 function DrawTile( g, x,  y, idx )
@@ -388,7 +410,7 @@ function TickField()
     }
 
     gPlayerX += Sign( gMoveX ) * SCROLL;         //プレイヤー座標移動X   
-    gPlayerY += Sign( gMoveY ) * SCROLL;        //プレイヤー座標移動X
+    gPlayerY += Sign( gMoveY ) * SCROLL;        //プレイヤー座標移動Y
     gMoveX   -= Sign( gMoveX ) * SCROLL;           //移動量消費X
     gMoveY   -= Sign( gMoveY ) * SCROLL;           //移動量消費Y
 
@@ -449,6 +471,35 @@ window.onkeydown = function( ev )                   //キーを押したとき�
     }
     gKey[ c ] = 1;
 
+    if( c == 83 ){               //Sキーの場合
+        localStorage.setItem("X座標", gPlayerX.toString())
+        localStorage.setItem("Y座標", gPlayerY.toString())
+        return;
+    }
+
+    if( c == 76 ){               //Lキーの場合
+        let storedX = parseInt(localStorage.getItem('X座標'));
+        let storedY = parseInt(localStorage.getItem('Y座標'));
+        gPlayerX = storedX;c
+        gPlayerY = storedY;
+        return;
+    }
+
+    if( c == 67 ){               //Cキーの場合
+        localStorage.removeItem('X座標');
+        localStorage.removeItem('Y座標');
+        return;
+    }
+
+
+
+    // if (gPhase == 0){                               //フィールド上で
+    //     if( c == 32 ){                              //スペースキーの場合
+    //     DrawConfig();
+    //     return;
+    //     }    
+    // }
+
     if (gPhase == 1){                               //敵が現れた場合
         CommandFight();
         return;
@@ -500,6 +551,8 @@ window.onkeydown = function( ev )                   //キーを押したとき�
         SetMessage( "ゲームオーバー", null);
         return;
     }
+
+    
 
     gMessage1 = null;
 }
