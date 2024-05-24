@@ -106,30 +106,30 @@ const       gMap = [
 //戦闘行動処理
 function Action ()
 {
-    gPhase ++;                                  //フェーズ経過
-
-    if(gPhase == 3 ){
-        SetMessage( gMonsterName[ gEnemyType ]+ "の攻撃！", gEnemyType +1 + "　のダメージ！"  );
-// gPhase = 7;
-        return;
-    }   
 
     if( gCursor == 0 ){                         //「戦う」選択時
         SetMessage("あなたの攻撃！", gLv + 3 + "　のダメージ！" );
-gPhase = 5;
+    gPhase = 5;
         return;
+
+    gPhase ++;                                  //フェーズ経過　05/24_現在自分の攻撃のみ実施自分の攻撃で相手が倒れたかの判定を実施し、行動を継続するように開発予定。
+
+        if(gPhase == 3 ){
+        SetMessage( gMonsterName[ gEnemyType ]+ "の攻撃！", gEnemyType +1 + "　のダメージ！"  );
+    // gPhase = 7;
+        return;
+    } 
     }
 
-    if(Math.random() < 0.7){                            //「逃げる」成功時
-        SetMessage( "あなたは逃げ出した" , null);
+    if(gCursor == 1){
+        if(Math.random() < 0.7){                            //「逃げる」成功時
+            SetMessage( "あなたは逃げ出した" , null);
         gPhase = 6;
-        return;
+            return;
+        }
+        SetMessage( "あなたは逃げ出した", "しかし回り込まれた！");    //「逃げる」失敗時
     }
-
-    //「逃げる」失敗時
-    SetMessage( "あなたは逃げ出した", "しかし回り込まれた！");
 }
-
 //経験値処理
 function AddExp(val){
     gEx += val;
@@ -146,6 +146,9 @@ function AppearEnemy( t ){
     gPhase = 1;
     gEnemyType = t ;                                    //     
     SetMessage("モンスターが現れた！" , null);
+    if (isPlaying){
+       PlayMusic();
+    }
     // setTimeout(function() {
     //     gPhase = 2;
     // }, 2000);
@@ -315,11 +318,7 @@ function DrawStatus( g )
 function SwitchAudio()
 {
     SwitchMusic ()
-    if (isPlaying) {            // 音楽が再生中の場合は停止
-        PauseMusic();
-    } else {            // 音楽が停止中の場合は再生
-        PlayMusic();
-    }
+
 }
 
 function PlayMusic()
@@ -355,16 +354,17 @@ function PlayMusic()
 
 function PauseMusic(){
     audio.pause();
-    audio.currentTime = 0;  // 音楽を最初から再生するために設定
+    audio.currentTime = 0;  // 停止後音楽を最初から再生するために設定
     isPlaying = false;
 }
 
-
 //音楽切り替え処理
 function SwitchMusic (){
-
-
-
+    if (isPlaying) {            // 音楽が再生中の場合は停止
+        PauseMusic();
+    } else {            // 音楽が停止中の場合は再生
+        PlayMusic();
+    }
 }
 
 
@@ -582,14 +582,14 @@ window.onkeydown = function( ev )                   //キーを押したとき�
 
     if (gPhase == 2){                           //戦闘コマンド選択フェーズ
         if( c == 13 || c == 90 ){               //Enterキー、又はZキーの場合
-            Action();                       //戦闘行動処理
+            Action();                           //戦闘行動処理　※Action内でフェーズを進行させている
         }else{
             gCursor = 1 - gCursor; //カーソル移動
         }
         return
     }
 
-    if( gPhase == 3 ){
+    if( gPhase == 3 ){          //戦闘実施フェーズ
         Action();               //戦闘行動処理
         return;
     }
@@ -611,11 +611,16 @@ window.onkeydown = function( ev )                   //キーを押したとき�
     if( gPhase == 6 ){
         if( IsBoss() && gCursor == 0){          //敵がラスボスで、かつ「戦う」を選択したとき
             SetMessage("魔王を倒し", "世界に平和が訪れた" );
-            PlayMusic();         
+            if (isPlaying){
+            PlayMusic();
             return;
+            }             
         }
         gPhase = 0;
-
+        if(isPlaying){
+        PlayMusic();
+        }
+        return;
     }
     
     if( gPhase == 7){
@@ -649,7 +654,6 @@ window.onload =function()                                                   //on
     gScreen = document.createElement("canvas");                             //tagName で指定された HTML 要素を生成し、または tagName が認識できない場合は HTMLUnknownElement を生成 ref: https://developer.mozilla.org/ja/docs/Web/API/Document/createElement
     gScreen.width = WIDTH;                                                  //実画面の幅を仮想画面の幅に
     gScreen.height = HEIGHT;                                                //実画面の高さを仮想画面の高さに
-
 
     WmSize();                                                               //画面サイズ初期化
     window.addEventListener("resize", function(){WmSize()});                //ブラウザサイズ変更時の処理　ここでは"resize"イベントがおこった際、"WmSize"関数が実行される　　ref:https://developer.mozilla.org/ja/docs/Web/API/EventTarget/addEventListener
