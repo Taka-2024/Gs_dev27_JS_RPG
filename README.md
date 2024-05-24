@@ -29,9 +29,9 @@
 - JSの機能を活用してどのようにRPGゲームを作成できるかを理解するために作成
 - 参考サイト：https://www.youtube.com/playlist?list=PLJ86MSrhnFKVcfaffKPYkvfkPg4qRsijs
 - 利用した音源
-- フィールドBGM1：https://music.storyinvention.com/8bit-yuusya-iku/
-- 戦闘BGM1：https://music.storyinvention.com/8bit-sentou/
-- エンディングBGM：https://music.storyinvention.com/8bit-ending-theme/
+  - フィールドBGM1：https://music.storyinvention.com/8bit-yuusya-iku/
+  - 戦闘BGM1：https://music.storyinvention.com/8bit-sentou/
+  - エンディングBGM：https://music.storyinvention.com/8bit-ending-theme/
 
 
 
