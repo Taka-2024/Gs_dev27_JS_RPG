@@ -650,6 +650,8 @@ window.onkeyup = function( ev )                     //キーを離したとき�
 // browser起動イベント
 window.onload =function()                                                   //onload ref:https://qiita.com/s_ryota/items/ac26a2fb9a62c16561ce
 {
+
+
     LoadImage();
     gScreen = document.createElement("canvas");                             //tagName で指定された HTML 要素を生成し、または tagName が認識できない場合は HTMLUnknownElement を生成 ref: https://developer.mozilla.org/ja/docs/Web/API/Document/createElement
     gScreen.width = WIDTH;                                                  //実画面の幅を仮想画面の幅に
@@ -659,4 +661,5 @@ window.onload =function()                                                   //on
     window.addEventListener("resize", function(){WmSize()});                //ブラウザサイズ変更時の処理　ここでは"resize"イベントがおこった際、"WmSize"関数が実行される　　ref:https://developer.mozilla.org/ja/docs/Web/API/EventTarget/addEventListener
     setInterval(function(){WmTimer()}, INTERVAL);                                  //33ms間隔で、WmTimer()を呼び出す（約30.3fps）　ref:https://developer.mozilla.org/ja/docs/Web/API/setInterval
 
+    alert("「m」キーを押すと音楽が流れます。もう一度押すと音楽が止まります。")
 }
