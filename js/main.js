@@ -688,5 +688,5 @@ window.onload =function()                                                       
     window.addEventListener("resize", function(){WmSize()});                                //ブラウザサイズ変更時の処理　ここでは"resize"イベントがおこった際、"WmSize"関数が実行される　　ref:https://developer.mozilla.org/ja/docs/Web/API/EventTarget/addEventListener
     setInterval(function(){WmTimer()}, INTERVAL);                                           //33ms間隔で、WmTimer()を呼び出す（約30.3fps）　ref:https://developer.mozilla.org/ja/docs/Web/API/setInterval
 
-    alert("「m」キーを押すと音楽が流れます。もう一度押すと音楽が止まります。")
+    alert("「m」キーで音楽のON、OFFを切り替えられます")
 }
