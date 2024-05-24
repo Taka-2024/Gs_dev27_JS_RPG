@@ -29,6 +29,7 @@ let         gHP = START_HP                                  //プレイヤーの
 let         gMHP = START_HP                                 //プレイヤーの最大HP
 let         gLv = 1                                         //プレイヤーのレベル
 let         gCursor = 0;                                    //カーソル位置
+let         gEnemyHP;
 let         gEnemyType;                                       //エネミー種別
 let         gFrame = 0;                                     //内部カウンタ
 let         gHeight;                                        //実画面の高さ
@@ -37,6 +38,7 @@ let         gMessage1 = null;                               //表示メッセー
 let         gMessage2 = null;                               //表示メッセージ2
 let         gMoveX = 0;                                     //移動量X
 let         gMoveY = 0;                                     //移動量Y
+let         gOrder;                                         //行動順
 let         gImgBoss;                                       //画像‗ラスボス
 let         gImgMap;                                        //画像_マップ
 let         gImgPlayer;                                     //画像_プレイヤー
@@ -107,19 +109,30 @@ const       gMap = [
 function Action ()
 {
 
-    if( gCursor == 0 ){                         //「戦う」選択時
-        SetMessage("あなたの攻撃！", gLv + 3 + "　のダメージ！" );
-    gPhase = 5;
-        return;
-
     gPhase ++;                                  //フェーズ経過　05/24_現在自分の攻撃のみ実施自分の攻撃で相手が倒れたかの判定を実施し、行動を継続するように開発予定。
 
-        if(gPhase == 3 ){
-        SetMessage( gMonsterName[ gEnemyType ]+ "の攻撃！", gEnemyType +1 + "　のダメージ！"  );
-    // gPhase = 7;
-        return;
-    } 
-    }
+        if(((gPhase + gOrder ) & 1 ) == 0 ){                                                                       //
+            const     d =  GetDamage( gEnemyType + 2 ) ;
+            SetMessage( gMonsterName[ gEnemyType ]+ "の攻撃！", d + "　のダメージ！"  );
+            gHP -= d;                                                                           //プレイヤーのHPの減少処理
+            if ( gHP <=0 ){                                                                      //プレイヤーが負けた場合
+                gPhase = 7;
+            }
+            return;
+        } 
+
+        //プレイヤーの行動フェーズ
+        if( gCursor == 0 ){                                                                  //「戦う」選択時
+            const   d = GetDamage(gLv + 1)
+            SetMessage("あなたの攻撃！", d + "　のダメージ！" );
+            gEnemyHP -= d;
+            if (gEnemyHP <=0 ){
+                gPhase = 5;
+            }
+            return;
+        }
+
+
 
     if(gCursor == 1){
         if(Math.random() < 0.7){                            //「逃げる」成功時
@@ -140,10 +153,11 @@ function AddExp(val){
 }
 
 
-//
+//敵出現処理
 function AppearEnemy( t ){
     // t = Math.floor( Math.random() * 4) ;
     gPhase = 1;
+    gEnemyHP = t * 3 + 5;                   //敵HP
     gEnemyType = t ;                                    //     
     SetMessage("モンスターが現れた！" , null);
     if (isPlaying){
@@ -291,12 +305,17 @@ function DrawStatus( g )
     {
         g.font = FONT;                                          //文字フォントの設定
         g.fillStyle = FONTSTYLE;                                //文字の色
-        g.fillText( "LV " +gLv, 4, 13);                         //Lv
-        g.fillText( "HP " +gHP, 4, 25);                         //HP
-        g.fillText( "EX " +gEx, 4, 37);                         //Ex
-
+        g.fillText( "LV " , 4, 13);     DrawTextR( g , gLv, 36, 13) ;                        //Lv
+        g.fillText( "HP " , 4, 25);     DrawTextR( g , gHP, 36, 25) ;                         //HP
+        g.fillText( "EX " , 4, 37);     DrawTextR( g , gEx, 36, 37) ;                         //Ex
 }
 
+function DrawTextR( g, str, x, y)
+{
+    g.textAlign = "right";
+    g.fillText( str, x, y);
+    g.textAlign = "left";
+}
 //セーブ画面
 // function DrawConfig( g )
 // {
@@ -378,6 +397,12 @@ function DrawTile( g, x,  y, idx )
 }
 
 
+//ダメージ算出式
+function GetDamage( a )
+{
+    return(Math.floor( a * ( 1 + Math.random())));  //攻撃力の1～2倍
+}
+
 
 function    IsBoss()
 {
@@ -414,6 +439,10 @@ function Sign( val )
 //フィールド進行処理
 function TickField()
 {
+    if ( gPhase != 0){
+        return;
+    }
+
     if( gMoveX !=0 || gMoveY != 0 || gMessage1 ){}              //移動中またはメッセージ表示中の場合
     else if( gKey[ 37 ]) {gAngle = 1; gMoveX = - TILESIZE;}     //左
     else if( gKey[ 38 ]) {gAngle = 3; gMoveY = - TILESIZE;}     //上
@@ -469,8 +498,18 @@ function TickField()
         
         if (Math.random() * 16 < gEncounter[ m ]){               //マップの処理に応じてランダムエンカウント     
             gPhase = 1;
-            
-            AppearEnemy(  Math.floor(Math.random() * 4 ))  ;                                       //戦闘フェーズ [0＝スライム、1＝ラビット、、、4＝魔王
+            let     t = Math.abs( gPlayerX / TILESIZE - START_X) +
+                        Math.abs( gPlayerY / TILESIZE - START_Y) ;                  //開始位置からの距離で敵のレベルを変更
+            if( m == 6 ){                                                           //林なら敵レベルを0.5上昇
+                t += 8;
+            }
+            if( m == 7 ){                                                           //山なら敵レベルを1上昇
+                t += 16;
+            }
+            t+= Math.random() * 5 ;                                                  //敵レベルをランダムに0.5上昇
+            t = Math.floor ( t / 16);
+            t = Math.min( t, gMonsterName.length - 2 );                                            //出現モンスターの上限処理
+            AppearEnemy( t )  ;                                                  //戦闘フェーズ [0＝スライム、1＝ラビット、、、4＝魔王
         }
         
         
@@ -525,8 +564,10 @@ function WmSize()
 //タイマーイベント発生時の処理
 function WmTimer()
 {
-    gFrame++;                                       //内部カウンタの増加
-    TickField();                                    //フィールド進行処理
+    if ( !gMessage1){
+        gFrame++;                                       //内部カウンタの増加
+        TickField();                                    //フィールド進行処理
+    }
     WmPaint(); 
 }
 
@@ -582,6 +623,7 @@ window.onkeydown = function( ev )                   //キーを押したとき�
 
     if (gPhase == 2){                           //戦闘コマンド選択フェーズ
         if( c == 13 || c == 90 ){               //Enterキー、又はZキーの場合
+            gOrder = Math.floor( Math.random() * 2 );               //戦闘行動順決定
             Action();                           //戦闘行動処理　※Action内でフェーズを進行させている
         }else{
             gCursor = 1 - gCursor; //カーソル移動
@@ -625,7 +667,7 @@ window.onkeydown = function( ev )                   //キーを押したとき�
     
     if( gPhase == 7){
         gPhase = 8;
-        SetMessage( "あなたは負けてしまった", null);
+        SetMessage( "負けてしまった", null);
         return;
     }
 
